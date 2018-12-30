@@ -13,7 +13,7 @@ coordinates based on those of its closest neighbour of highest fitness and the f
 
 The use of the fly with the best fitness has been criticized by some, since this information would not be available to
 flies in real swarm intelligence; the authors of the article, however, have stated that it is unneccessary, and I will
-be doing experiments where it can bbe disabled to see how performance compares.
+be doing experiments where it can be disabled to see how performance compares.
 
 The article for the Dispersive Flies Optimization can be found here:
 
