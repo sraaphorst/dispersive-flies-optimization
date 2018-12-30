@@ -1,6 +1,6 @@
 # Dispersive Flies Optimization
 
-This is an implementation in Python of the swarm algorithm called _Dispersive Flies Optimization_.
+This is an implementation in Python (using numpy) of the swarm algorithm called _Dispersive Flies Optimization_.
 
 The concept is based on the swarming behaviour of flies near food sources. It is a bare-bones swarm intelligence
 algorithm (i.e. it has very few tunable parameters), where:
