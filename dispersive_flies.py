@@ -34,7 +34,7 @@ def euclidean_metric(f1, f2):
     """
     The Euclidean metric for fly distances.
     """
-    return np.linalg.norm(f1, f2)
+    return np.linalg.norm(f1 - f2)
 
 
 class DispersiveFlies:
