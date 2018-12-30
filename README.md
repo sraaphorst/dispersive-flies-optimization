@@ -16,9 +16,11 @@ flies in real swarm intelligence; the authors of the article, however, have stat
 be doing experiments where it can bbe disabled to see how performance compares.
 
 The article for the Dispersive Flies Optimization can be found here:
+
 https://annals-csis.org/Volume_2/pliks/142.pdf
 
 It is also described on Wikipedia:
+
 https://en.wikipedia.org/wiki/Dispersive_flies_optimisation
 
 Along with the implementation is a program to employ the algorithm to find _Steiner systems._
@@ -40,4 +42,5 @@ Let `{0, ..., 6}` be the `v`-set. The `STS(7)` is thus, unique up to isomorphism
 This is also called the _Fano plane_ and is the _projective plane of order 2._
 
 More on Steiner systems can be read at:
+
 https://en.wikipedia.org/wiki/Steiner_system
