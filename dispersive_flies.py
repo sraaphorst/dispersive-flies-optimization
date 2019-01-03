@@ -70,6 +70,7 @@ class DispersiveFlies:
     def __init__(self,
                  dimensions,
                  fitness,
+                 block_size=None,
                  stop_value=None,
                  disturbance_threshold=0.025,
                  dim_min=None,
@@ -78,9 +79,12 @@ class DispersiveFlies:
                  metric=manhattan_metric,
                  adjustment=discrete_clamper,
                  flies=500,
-                 max_ticks=300000):
+                 max_ticks=300000,
+                 end_round=None,
+                 debug=False):
         self._dimensions = dimensions
         self._fitness = fitness
+        self._block_size = self._dimensions if block_size is None else block_size
         self._stop_value = stop_value
 
         self._disturbance_threshold = disturbance_threshold
@@ -93,60 +97,80 @@ class DispersiveFlies:
         self._adjustment = adjustment
         self._flies = flies
         self._max_ticks = max_ticks
+        self._end_round = end_round
+        self._flypos = None
+        self._debug = debug
 
     def _produce_random_dimension(self, d):
         value = np.random.random() * (self._dim_max[d] - self._dim_min[d]) + self._dim_min[d]
         return int(value) if self._discrete else value
 
     def _produce_random_fly(self):
-        fly = np.random.rand(self._dimensions) * (self._dim_max - self._dim_min) + self._dim_min
+        # Constrain the number of non-zero entries to the stop value.
+        # fly = np.random.rand(self._dimensions) * (self._dim_max - self._dim_min) + self._dim_min
+        positions = np.random.random_integers(0, self._dimensions, self._block_size)
+        fly = np.array([(np.random.random() * (self._dim_max[i] - self._dim_min[i]) + self._dim_min[i]
+                         if i in positions else 0)
+                        for i in range(self._dimensions)])
         return fly.astype(int) if self._discrete else fly
 
     def run(self):
         s = DispersiveFlies.Statistics()
 
-        # Create the flies randomly.
-        flies = np.array([self._produce_random_fly() for _ in range(self._flies)])
-
         for t in range(self._max_ticks):
-            # Shuffle the flies to randomize tie-breaking.
-            np.random.shuffle(flies)
-
-            # Evaluate the flies and find the best.
-            evaluations = self._fitness(flies)
-            best_fly = np.argmax(evaluations)
-
-            # If there is a stop value and this fly has reached it, we are done.
-            if self._stop_value and evaluations[best_fly] >= self._stop_value:
+            best_fly = self.run_round()
+            if self._stop_value and self._fitness(self._flypos[best_fly]) == self._stop_value:
                 s.ticks = t
-                return s, flies[best_fly]
-
-            # Initialize the array of new fly positions.
-            new_flies = np.zeros((self._flies, self._dimensions))
-
-            # Create one new fly at a time.
-            for f in range(self._flies):
-                # First, find the nearest neighbour fly. Skip over this fly, obviously, and adjust appropriately
-                # if the nearest neighbour is after this fly.
-                nbr = np.argmin([self._metric(flies[f], fp) for n, fp in enumerate(flies) if n != f])
-                if nbr >= f:
-                    nbr += 1
-
-                for d in range(self._dimensions):
-                    # Calculation is as follows:
-                    # Nearest nbr + U(0,1) * (best fly - this fly)
-                    new_fly = flies[nbr] + np.random.rand(self._dimensions) * (flies[best_fly] - flies[f])
-
-                    # For each coordinate, we check if we replace it randomly.
-                    # We use a list comprehension instead of np.vectorize due to problems with vectorize.
-                    new_fly_adj = np.array([self._produce_random_dimension(d)
-                                            if np.random.random() < self._disturbance_threshold
-                                            else value
-                                            for d, value in enumerate(new_fly)])
-                    new_flies[f] = self._adjustment(self._dim_min, self._dim_max, new_fly_adj)
+                return s, self._flypos[best_fly]
 
         # If we reach this point, we have run out of ticks.
         # Get and return the best fly.
-        best_fly = np.argmax(self._fitness(flies))
+        best_fly = np.argmax(self._fitness(self._flypos))
         s.ticks = self._max_ticks
-        return s, flies[best_fly]
+        return s, self._flypos[best_fly]
+
+    def run_round(self):
+        if self._flypos is None:
+            # Create the flies randomly.
+            self._flypos = np.array([self._produce_random_fly() for _ in range(self._flies)])
+
+        # Shuffle the flies to randomize tie-breaking.
+        np.random.shuffle(self._flypos)
+
+        # Evaluate the flies and find the best.
+        # evaluations = self._fitness(flies)
+        evaluations = np.array([self._fitness(fly) for fly in self._flypos])
+        best_fly = np.argmax(evaluations)
+        if self._debug:
+            print("Best: {}".format(evaluations[best_fly]))
+
+        # Initialize the array of new fly positions.
+        new_flies = np.zeros((self._flies, self._dimensions))
+
+        # Create one new fly at a time.
+        for f in range(self._flies):
+            # First, find the nearest neighbour fly. Skip over this fly, obviously, and adjust appropriately
+            # if the nearest neighbour is after this fly.
+            nbr = np.argmin([self._metric(self._flypos[f], fp) for n, fp in enumerate(self._flypos) if n != f])
+            if nbr >= f:
+                nbr += 1
+
+            for d in range(self._dimensions):
+                # Calculation is as follows:
+                # Nearest nbr + U(0,1) * (best fly - this fly)
+                new_fly = self._flypos[nbr] +\
+                          np.random.rand(self._dimensions) * (self._flypos[best_fly] - self._flypos[f])
+
+                # For each coordinate, we check if we replace it randomly.
+                # We use a list comprehension instead of np.vectorize due to problems with vectorize.
+                new_fly_adj = np.array([self._produce_random_dimension(d)
+                                        if np.random.random() < self._disturbance_threshold
+                                        else value
+                                        for d, value in enumerate(new_fly)])
+                new_flies[f] = self._adjustment(self._dim_min, self._dim_max, new_fly_adj)
+
+        self._flypos = new_flies
+
+        if self._end_round is not None:
+            self._end_round(self._flypos)
+        return best_fly

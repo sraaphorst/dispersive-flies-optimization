@@ -4,6 +4,7 @@
 #
 # Formulation of Steiner systems to try to solve with an optimizer.
 
+import sys
 from math import factorial
 from itertools import combinations
 from dispersive_flies import DispersiveFlies
@@ -26,7 +27,7 @@ def steiner(t, k, v):
         raise ValueError("Necessary condition vCt / kCt failed")
     v1Ct1 = factorial(v - 1) // factorial(t - 1) // factorial(v - t)
     k1Ct1 = factorial(k - 1) // factorial(t - 1) // factorial(k - t)
-    if v1Ct1 & k1Ct1 != 0:
+    if v1Ct1 % k1Ct1 != 0:
         raise ValueError("Necessary condition (v-1)C(t-1) / (k-1)C(t-1) failed")
 
     # Formulate the problem. The number of dimensions is the number of blocks.
@@ -50,6 +51,7 @@ def steiner(t, k, v):
         # If we have covered any t-set multiple times, the score drops to 0 as it is an infeasible solution.
         # Otherwise, it is the number of covered t-sets.
         size = len(coverage)
+        # return len(set(coverage))
         if len(set(coverage)) == size:
             return size
         else:
@@ -57,12 +59,31 @@ def steiner(t, k, v):
 
     # Instantiate the problem.
     dimensions = len(ksets)
+    block_size = (factorial(v) // factorial(t) // factorial(v - t)) //\
+                 (factorial(k) // factorial(t) // factorial(k - t))
     solution_size = len(tset_lookup)
-    problem = DispersiveFlies(dimensions, fitness, solution_size)
+    problem = DispersiveFlies(dimensions, fitness, block_size, solution_size, debug=True)
 
     stats, solution = problem.run()
     return stats, fitness(solution) == solution_size, solution
 
 
 if __name__ == '__main__':
-    print("Hello")
+    if len(sys.argv) != 4:
+        print("Usage: {} t k v".format(sys.argv[0]))
+        sys.exit(1)
+    t, k, v = map(int, sys.argv[1:])
+
+    stats, finished, solution = steiner(t, k, v)
+    ksets = list(combinations(range(v), k))
+    readable_solution = [ksets[i] for i, value in enumerate(solution) if value == 1]
+
+    if finished:
+        for b in readable_solution:
+            print(b)
+        sys.exit(0)
+    else:
+        print("Could not finish. Best solution has size {}:".format(len(solution)))
+        for b in readable_solution:
+            print(b)
+        sys.exit(2)
