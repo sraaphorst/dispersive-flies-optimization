@@ -23,7 +23,11 @@ It is also described on Wikipedia:
 
 https://en.wikipedia.org/wiki/Dispersive_flies_optimisation
 
-Along with the implementation is a program to employ the algorithm to find _Steiner systems._
+Along with the implementation are two programs to employ the algorithm:
+
+1. An implementation that chases a mouse cursor around a window in two dimensions; and
+
+2. An implementation to find _Steiner systems._
 
 A `S(t, k, v)` Steiner system is a set of `k`-sets from a `v`-set such that every `t`-set appears in
 exactly one `k`-set. A simple example is `S(2, 3, 7)`, the _Steiner triple system of order 7_, also denoted `STS(7)`.
@@ -44,3 +48,20 @@ This is also called the _Fano plane_ and is the _projective plane of order 2._
 More on Steiner systems can be read at:
 
 https://en.wikipedia.org/wiki/Steiner_system
+
+The algorithm is able to find an STS of order 9 with relative ease:
+
+```
+(0, 1, 3)
+(0, 2, 5)
+(0, 4, 6)
+(0, 7, 8)
+(1, 2, 7)
+(1, 4, 8)
+(1, 5, 6)
+(2, 3, 4)
+(2, 6, 8)
+(3, 5, 8)
+(3, 6, 7)
+(4, 5, 7)
+```
