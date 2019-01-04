@@ -43,24 +43,26 @@ class DispersiveFlies:
     It requires very few parameters, namely:
     1. A dimension D for the space in which the flies inhabit.
     2. A fly fitness evaluation function, which should operate on a 1D array numpy array of length D.
-    3. Stopping value: stops if this value is achieved, assuming that it is the best fitness
+    3. The maximum number of non-zero entries that a randomly generated fly should have.
+    4. Stopping value: stops if this value is achieved, assuming that it is the best fitness
        Default is None, meaning never stop and simply complete all rounds.
-    4. The disturbance threshold, i.e. the probability a fly's coordinate is reset.
+    5. The disturbance threshold, i.e. the probability a fly's coordinate is reset.
        Default is 0.025. TODO: Play with this.
     Note: values in the array are constrained to [min,max): this is why we use 2 instead of 1 for max.
-    5. A numpy array to provide minimum values for each dimension.
+    6. A numpy array to provide minimum values for each dimension.
        Default: all dimensions have minimum 0.
-    6. A numpy array to provide maximum values for each dimension.
+    7. A numpy array to provide maximum values for each dimension.
        Default: all dimensions are 2.
-    7. True if the solution space is discrete, and false otherwise.
+    8. True if the solution space is discrete, and false otherwise.
        Default: True
-    8. The distance norm for finding neighbour flies.
+    9. The distance norm for finding neighbour flies.
        Default: manhattan_metric
-    9. An adjustment function for values in each dimension.
-       Default is discrete_clamper.
-       Use the identity if you do not want any adjustment.
-    10. The number of flies. Default is 500.
-    11. The number of ticks (time units / rounds) to try. Default is 300,000.
+    10. An adjustment function for values in each dimension.
+        Default is discrete_clamper.
+        Use the identity if you do not want any adjustment.
+    11. The number of flies. Default is 500.
+    12. At the end of a round, if this is not None, call this function with the flies.
+    13. The number of ticks (time units / rounds) to try. Default is 300,000.
     """
 
     class Statistics:
@@ -90,7 +92,7 @@ class DispersiveFlies:
         self._disturbance_threshold = disturbance_threshold
 
         self._dim_min = np.zeros(dimensions) if dim_min is None else dim_min
-        self._dim_max = (2 * np.ones(dimensions)) if dim_max is None else dim_max
+        self._dim_max = np.full(dimensions, 2) if dim_max is None else dim_max
         self._discrete = discrete
         self._metric = metric
 
@@ -163,6 +165,10 @@ class DispersiveFlies:
 
                 # For each coordinate, we check if we replace it randomly.
                 # We use a list comprehension instead of np.vectorize due to problems with vectorize.
+                # where doesn't seem to work well here.
+                # random_matrix = np.random.rand(self._dimensions)
+                # random_fly = self._produce_random_fly()
+                # new_fly_adj = np.where(random_matrix < self._disturbance_threshold, random_fly, new_fly)
                 new_fly_adj = np.array([self._produce_random_dimension(d)
                                         if np.random.random() < self._disturbance_threshold
                                         else value

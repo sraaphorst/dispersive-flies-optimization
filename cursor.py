@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#
 # By Sebastian Raaphorst, 2018
 #
 # A visual example of the dispersive fly optimization problem where the flies attempt to chase around
@@ -18,11 +19,10 @@ position = [0, 0]
 
 
 def update(ex):
-    def update(flies):
-        print("Updating {} flies".format(len(flies)))
+    def update_fn(flies):
         ex.flies = flies
         ex.update()
-    return update
+    return update_fn
 
 
 class Cursor(QWidget):

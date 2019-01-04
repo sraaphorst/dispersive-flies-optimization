@@ -62,7 +62,8 @@ def steiner(t, k, v):
     block_size = (factorial(v) // factorial(t) // factorial(v - t)) //\
                  (factorial(k) // factorial(t) // factorial(k - t))
     solution_size = len(tset_lookup)
-    problem = DispersiveFlies(dimensions, fitness, block_size, solution_size, debug=True)
+    print("Solution size is {}".format(solution_size))
+    problem = DispersiveFlies(dimensions, fitness, block_size, solution_size, flies=100, debug=True)
 
     stats, solution = problem.run()
     return stats, fitness(solution) == solution_size, solution
