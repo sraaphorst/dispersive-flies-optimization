@@ -65,7 +65,7 @@ def steiner(t, k, v):
     print("Solution size is {}".format(solution_size))
     problem = DispersiveFlies(dimensions, fitness, block_size, solution_size, flies=100, debug=True)
 
-    stats, solution = problem.run()
+    stats, finished, solution = problem.run()
     return stats, fitness(solution) == solution_size, solution
 
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
             print(b)
         sys.exit(0)
     else:
-        print("Could not finish. Best solution has size {}:".format(len(solution)))
+        print("Could not finish. Best solution has size {}:".format(len([i for i in solution if i])))
         for b in readable_solution:
             print(b)
         sys.exit(2)

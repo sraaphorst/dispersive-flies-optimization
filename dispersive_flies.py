@@ -80,8 +80,8 @@ class DispersiveFlies:
                  discrete=True,
                  metric=manhattan_metric,
                  adjustment=discrete_clamper,
-                 flies=500,
-                 max_ticks=300000,
+                 flies=50,
+                 max_ticks=10,
                  end_round=None,
                  debug=False):
         self._dimensions = dimensions
@@ -120,16 +120,18 @@ class DispersiveFlies:
         s = DispersiveFlies.Statistics()
 
         for t in range(self._max_ticks):
+            print(t)
             best_fly = self.run_round()
             if self._stop_value and self._fitness(self._flypos[best_fly]) == self._stop_value:
                 s.ticks = t
-                return s, self._flypos[best_fly]
+                return s, True, self._flypos[best_fly]
 
         # If we reach this point, we have run out of ticks.
         # Get and return the best fly.
-        best_fly = np.argmax(self._fitness(self._flypos))
+        evaluations = np.array([self._fitness(fly) for fly in self._flypos])
+        best_fly = np.argmax(evaluations)
         s.ticks = self._max_ticks
-        return s, self._flypos[best_fly]
+        return s, False, self._flypos[best_fly]
 
     def run_round(self):
         if self._flypos is None:
