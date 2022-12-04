@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-#
 # By Sebastian Raaphorst, 2018.
 #
 # An implementation of the Dispersive Flies Optimization algorithm, which can be found here:
